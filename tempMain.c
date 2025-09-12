@@ -23,10 +23,10 @@ int route_command(char **tokens)
         printf("Its a hop command\n");
         return execute_hop(tokens);
     }
-    // else if (strcmp(tokens[0], "reveal") == 0)
-    // {
-    //     return execute_reveal(tokens);
-    // }
+    else if (strcmp(tokens[0], "reveal") == 0)
+    {
+        return execute_reveal(tokens);
+    }
     return 0;
 }
 

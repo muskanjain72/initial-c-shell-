@@ -1,15 +1,15 @@
-cat < input.txt
-cat < hello.txt < muskan.txt < test.txt
-wc < test.txt
-cat < file1.txt
-cat < non_existent_file.txt
-cat < file1.txt < file2.txt
-sort < list.txt > sorted_list.txt
-grep 'line' < log.txt | wc -l
-cat < file1.txt
 cat < non_existent_file.txt
 cat < file1.txt < file2.txt
 cat < file2.txt
 cat < file2.txt < test.txt
 cat < file2.txt
 cat < file1.txt < file2.txt
+dosakdaoskdos
+echo "This is a new line." > output.txt
+cat output.txt
+echo "This is a new line" > Muskiii.txt
+cat Muskiii.txt
+echo "This is an appended line." >> output.txt
+cat output.txt
+echo "This is a new line." > output.txt
+echo "This is an appended line." >> output.txt

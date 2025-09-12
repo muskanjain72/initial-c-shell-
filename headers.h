@@ -30,8 +30,8 @@
 // #include "execution.h"
 // #include "signals.h"
 // #include "jobs.h"
-// #include "background.h"
-// #include "sequential.h"
+#include "background.h"
+#include "sequential.h"
 // #include "ping.h"
 // #include "activities.h"
 #define MAX_LOG_ENTRIES 15

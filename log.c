@@ -90,8 +90,8 @@ int execute_log(char **tokens)
             if (tokenize(command_to_execute, &parser) > 0 && parse_shell_cmd(&parser))
             {
                 printf("Executing: %s\n", command_to_execute);
-                printf("Parser tokens:%s\n", parser.tokens);
-                printf("Command to execute:%s\n");
+                // printf("Parser tokens:%s\n", parser.tokens);
+                printf("Command to execute:%s\n",command_to_execute);
                 route_command(parser.tokens);
                 free_tokens(&parser);
                 return 2;
@@ -113,6 +113,7 @@ int execute_log(char **tokens)
 
 void print_log()
 {
+    printf("I m in the print log function\n");
     if (log_count == 0)
         return;
 
@@ -121,6 +122,7 @@ void print_log()
         int index = (log_start + i) % MAX_LOG_ENTRIES;
         printf("%s\n", command_log[index].command);
     }
+    printf("Done printing the log\n");
 }
 
 void purge_log()

@@ -21,7 +21,7 @@
 // #include <grp.h>
 #include "prompt.h"
 // #include "log.h"
-// #include "hop.h"
+#include "hop.h"
 #include "input.h"
 #include "parser.h"
 // #include "reveal.h"
@@ -37,5 +37,6 @@
 #define MAX_LOG_ENTRIES 15
 #define MAX_TOKEN_LEN 256
 #define MAX_TOKENS 128
-#define MAX_PATH 128
+#define MAX_PATH 1024
+
 #endif

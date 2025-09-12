@@ -23,27 +23,102 @@ void initialize_all_state()
 }
 void execute_external_command(char **tokens)
 {
+    // pid_t pid = fork();
+
+    // if (pid < 0)
+    // {
+    //     // Forking failed
+    //     perror("fork failed");
+    //     return;
+    // }
+    // else if (pid == 0)
+    // {
+    //     execvp(tokens[0], tokens);
+
+    //     // execvp only returns if an error occurred.
+    //     // If it reaches here, the command was not found.
+    //     printf("Command not found!\n");
+    //     exit(1);
+    // }
+    // else
+    // {
+    //     // Parent process
+    //     // Wait for the child process to finish
+    //     int status;
+    //     waitpid(pid, &status, 0);
+    // }
+    char *redirect_file = NULL;
+    char *command_args[100];
+    int arg_count = 0;
+
+    // First, parse tokens to find the redirection operator and filename.
+    for (int i = 0; tokens[i] != NULL; i++)
+    {
+        if (strcmp(tokens[i], "<") == 0)
+        {
+            // Input redirection operator found.
+            // The next token must be the filename.
+            if (tokens[i + 1] != NULL)
+            {
+                redirect_file = tokens[i + 1];
+                // Stop parsing here. The redirection tokens are not passed to execvp.
+                break;
+            }
+            else
+            {
+                fprintf(stderr, "Syntax error: no input file specified after '<'.\n");
+                return;
+            }
+        }
+        else
+        {
+            command_args[arg_count++] = tokens[i];
+        }
+    }
+    command_args[arg_count] = NULL;
+
+    if (command_args[0] == NULL)
+    {
+        // No command to execute.
+        return;
+    }
+
     pid_t pid = fork();
 
     if (pid < 0)
     {
-        // Forking failed
         perror("fork failed");
         return;
     }
     else if (pid == 0)
     {
-        execvp(tokens[0], tokens);
+        // Child process
+        if (redirect_file != NULL)
+        {
+            // Open the file for reading.
+            int fd = open(redirect_file, O_RDONLY);
+            if (fd < 0)
+            {
+                // File does not exist or could not be opened.
+                fprintf(stderr, "No such file or directory\n");
+                exit(1);
+            }
+
+            // Redirect standard input (STDIN_FILENO) to the file.
+            dup2(fd, STDIN_FILENO);
+            close(fd); // Close the original file descriptor.
+        }
+
+        // Execute the command with the modified arguments.
+        execvp(command_args[0], command_args);
 
         // execvp only returns if an error occurred.
-        // If it reaches here, the command was not found.
-        printf("Command not found!\n");
+        fprintf(stderr, "Command not found!\n");
         exit(1);
     }
     else
     {
         // Parent process
-        // Wait for the child process to finish
         int status;
         waitpid(pid, &status, 0);
     }
@@ -67,7 +142,8 @@ int route_command(char **tokens)
     }
     else
     {
-        execute_external_command(tokens);
+        // execute_external_command(tokens);
+        execute_pipeline(tokens);
     }
     return 0;
 }

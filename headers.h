@@ -26,7 +26,7 @@
 #include "parser.h"
 #include "reveal.h"
 // #include "io.h"
-// #include "pipes.h"
+#include "pipes.h"
 // #include "execution.h"
 // #include "signals.h"
 // #include "jobs.h"

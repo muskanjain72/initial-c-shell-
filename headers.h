@@ -2,7 +2,7 @@
 #define HEADERS_H
 #include <stdio.h>
 #include <stdbool.h>
-#include <signal.h>   // kill(), SIGKILL, SIGSTOP, SIGCONT, etc.// struct sigaction, sigaction(), SIGINT, SIGTSTP
+#include <signal.h> // kill(), SIGKILL, SIGSTOP, SIGCONT, etc.// struct sigaction, sigaction(), SIGINT, SIGTSTP
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -34,5 +34,8 @@
 // #include "sequential.h"
 // #include "ping.h"
 // #include "activities.h"
-
+#define MAX_LOG_ENTRIES 15
+#define MAX_TOKEN_LEN 256
+#define MAX_TOKENS 128
+#define MAX_PATH 128
 #endif

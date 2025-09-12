@@ -249,7 +249,7 @@ int parse_shell_cmd(Parser *p)
     }
 
     // Parse zero or more "(& | ;) cmd_group" sequences
-    while (p->pos < p->count && (match_token(p, "&") || match_token(p, ";")))
+    while (p->pos < p->count && (isMatch(p, "&") || isMatch(p, ";")))
     {
         char separator = p->tokens[p->pos][0];
         p->pos++; // consume & or ;
@@ -266,7 +266,7 @@ int parse_shell_cmd(Parser *p)
     }
 
     // Optional trailing & (already handled in the while loop, this is redundant but harmless)
-    if (p->pos < p->count && match_token(p, "&"))
+    if (p->pos < p->count && isMatch(p, "&"))
     {
         p->pos++;
     }

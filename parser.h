@@ -1,8 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define MAX_TOKEN_LEN 256
-#define MAX_TOKENS 128
 typedef struct
 {
     char** tokens; // Array of token strings

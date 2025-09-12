@@ -1,19 +1,19 @@
 #include "headers.h"
 #include "parser.h"
-// #include "io.h"
-// #include "pipes.h"
-// #include "execution.h"
-// #include "ping.h"       // Added for the ping command
-// #include "activities.h" // Added for the activities command
+#include "io.h"
+#include "pipes.h"
+#include "execution.h"
+#include "ping.h"       // Added for the ping command
+#include "activities.h" // Added for the activities command
 
-// extern char home_dir[MAX_PATH];
-// extern char current_dir[MAX_PATH];
-// extern char previous_dir[MAX_PATH];
-// extern int has_previous;
-// extern LogEntry command_log[MAX_LOG_ENTRIES];
-// extern int log_count;
-// extern int log_start;
-// extern char log_file_path[MAX_PATH];
+extern char home_dir[MAX_PATH];
+extern char current_dir[MAX_PATH];
+extern char previous_dir[MAX_PATH];
+extern int has_previous;
+extern LogEntry command_log[MAX_LOG_ENTRIES];
+extern int log_count;
+extern int log_start;
+extern char log_file_path[MAX_PATH];
 
 // Global forward declarations
 void free_tokens(Parser *parser);

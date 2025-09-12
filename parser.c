@@ -1,6 +1,14 @@
 #include "headers.h"
-// Tokenizes the input string into an array of tokens
-int tokenize(char *input, Parser *parser)
+
+/*
+shell_cmd  ->  cmd_group ((& | ;) cmd_group)* &?
+cmd_group ->  atomic (\| atomic)*
+atomic -> name (name | input | output)*
+input -> < name | <name
+output -> > name | >name | >> name | >>name
+name -> r"[^|&><;\s]+"
+*/
+int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an array of tokens
 {
     parser->pos = 0;
     parser->count = 0;
@@ -11,7 +19,7 @@ int tokenize(char *input, Parser *parser)
         return 0;
     }
     char *current = input;
-
+    printf("Initial Input is %s\n", current);
     while (*current != '\0' && parser->count < MAX_TOKENS)
     {
         // Skip leading whitespace
@@ -21,88 +29,53 @@ int tokenize(char *input, Parser *parser)
         {
             break;
         }
-        // if (*current == '>' && *(current + 1) == '>')
         char *token = malloc(MAX_TOKEN_LEN * sizeof(char));
         if (token == NULL)
         {
             fprintf(stderr, "Memory allocation failed for a token.\n");
-            // Clean up already allocated memory
-            for (int i = 0; i < parser->count; i++)
-            {
-                free(parser->tokens[i]);
-            }
-            free(parser->tokens);
-            parser->tokens = NULL;
+            // Clean up previously allocated memory
+            free_tokens(parser);
             return 0;
         }
         int token_pos = 0;
-        // if (*current == '>' && (*(current + 1) == '>' || (*(current + 1) == ' ' && *(current + 2) == '>')))
-
-        // {
-        //     strcpy(parser->tokens[parser->count], ">>");
-        //     current += 2;
-        // }
-        // else if (*current == '>' && isspace(*(current + 1)))
-        // {
-        //     char *temp = current + 1;
-        //     while (isspace(*temp))
-        //     {
-        //         temp++;
-        //     }
-        //     if (*temp == '>')
-        //     {
-        //         strcpy(parser->tokens[parser->count], ">>");
-        //         current = temp + 1;
-        //     }
-        //     else
-        //     {
-        //         // It was just a single >
-        //         parser->tokens[parser->count][0] = *current;
-        //         parser->tokens[parser->count][1] = '\0';
-        //         current++;
-        //     }
-        // }
-        // // Handle special single characters (|&;<>)
-        // else if (strchr("|&;<>", *current))
-        // {
-        //     parser->tokens[parser->count][0] = *current;
-        //     parser->tokens[parser->count][1] = '\0';
-        //     current++;
-        // }
         if (*current == '>')
         {
-            // Check for the `>>` token
             if (*(current + 1) == '>')
             {
                 strcpy(token, ">>");
                 current += 2;
             }
-            // Check for the `> >` token with a space
-            else if (*(current + 1) == ' ' && *(current + 2) == '>')
-            {
-                strcpy(token, ">>");
-                current += 3;
-            }
-            // Handle single `>` token
             else
             {
-                token[0] = *current;
-                token[1] = '\0';
+                strcpy(token, ">");
                 current++;
             }
         }
         // Handle single-character tokens (`|`, `&`, `;`, `<`)
-        else if (strchr("|&;<>", *current))
+        else if (*current == '<')
         {
-            token[0] = *current;
-            token[1] = '\0';
+            strcpy(token, "<");
+            current++;
+        }
+        else if (*current == '|')
+        {
+            strcpy(token, "|");
+            current++;
+        }
+        else if (*current == '&')
+        {
+            strcpy(token, "&");
+            current++;
+        }
+        else if (*current == ';')
+        {
+            strcpy(token, ";");
             current++;
         }
         // Handle regular tokens (names)
         else
         {
-            // int token_pos = 0;
-            while (*current != '\0' && !isspace(*current) && !strchr("|&;<>", *current) && token_pos < MAX_TOKEN_LEN - 1)
+            while (*current != '\0' && !isspace(*current) && !strchr("|&;<", *current) && token_pos < MAX_TOKEN_LEN - 1)
             {
                 // parser->tokens[parser->count][token_pos++] = *current++;
                 token[token_pos++] = *current++;
@@ -110,21 +83,36 @@ int tokenize(char *input, Parser *parser)
             // parser->tokens[parser->count][token_pos] = '\0';
             token[token_pos] = '\0';
         }
-        parser->tokens[parser->count] = token;
-        parser->count++;
+        // parser->tokens[parser->count] = token;
+        // parser->count++;
+        if (token_pos > 0 || (token_pos == 0 && strchr("|&><;", token[0])))
+        {
+            parser->tokens[parser->count] = token;
+            parser->count++;
+        }
+        else
+        {
+            free(token);
+        }
     }
     if (parser->count < MAX_TOKENS)
     {
         parser->tokens[parser->count] = NULL;
     }
-
+    printf("Total numeber of tokens are %d\n",parser->count);
+    printf("Following r the tokens:\n");
+    for (int i = 0; i < parser->count; i++)
+    {
+        printf("%s\n",parser->tokens[i]);
+    }
+    printf("Done with tokenizing and exiting from function\n");
     return parser->count;
 }
 
 // Check if current token matches expected string
-int match_token(Parser *p, const char *expected)
+int isMatch(Parser *p, const char *expected)
 {
-    if (p->pos >= p->count)
+    if (p->pos >= p->count)  // p->pos tells the word to compare
     {
         return 0;
     }
@@ -134,7 +122,7 @@ int match_token(Parser *p, const char *expected)
 // Consume current token if it matches expected
 int consume_token(Parser *p, const char *expected)
 {
-    if (match_token(p, expected))
+    if (isMatch(p, expected))
     {
         p->pos++;
         return 1;
@@ -143,7 +131,7 @@ int consume_token(Parser *p, const char *expected)
 }
 
 // Checks if the current token is a valid name
-int is_name_token(Parser *p)
+int isValidName(Parser *p)
 {
     if (p->pos >= p->count)
     {
@@ -164,7 +152,7 @@ int is_name_token(Parser *p)
 // Grammar: name -> r"[^|&><;\s]+"
 int parse_name(Parser *p)
 {
-    if (is_name_token(p)) // consume the name token
+    if (isValidName(p)) // consume the name token
     {
         p->pos++;
         return 1;
@@ -176,10 +164,9 @@ int parse_name(Parser *p)
 int parse_input(Parser *p)
 {
     int saved_pos = p->pos;
-
     if (consume_token(p, "<"))
     {
-        if (parse_name(p))
+        if (parse_name(p))  // p->pos has been increemented 
         {
             return 1;
         }
@@ -194,7 +181,7 @@ int parse_output(Parser *p)
 {
     int saved_pos = p->pos;
 
-    if (consume_token(p, ">") || consume_token(p, ">>") || consume_token(p, "> >"))
+    if (consume_token(p, ">") || consume_token(p, ">>"))
     {
         if (parse_name(p))
         {
@@ -290,34 +277,23 @@ int parse_shell_cmd(Parser *p)
 // Public function to parse a command
 int parse_command(char *input, Parser *parser)
 {
-    // Parser parser;
-
-    // Tokenize input
+    // first Tokenizing the input
     int token_count = tokenize(input, parser);
     if (token_count == 0)
     {
+        free_tokens(parser);
         return 1; // Empty input is valid
-        if (parser->tokens != NULL)
-        {
-            free(parser->tokens);
-            parser->tokens = NULL;
-        }
-        return 0;
+        
     }
-    printf("Tokens: ");
-    for (int i = 0; i < (*parser).count; i++)
+    printf("Tokens are as follows: \n");
+    for (int i = 0; i < parser->count; i++)
     {
-        printf("'%s' ", (*parser).tokens[i]);
+        printf("%s ", parser->tokens[i]);
     }
     printf("\n");
-    // Parse the command
-    // parser.pos = 0;
-    // int result = parse_shell_cmd(&parser);
-
-    // // Success: valid syntax and all tokens consumed
-    // return result && parser.pos == parser.count;
     parser->pos = 0;
     int result = parse_shell_cmd(parser);
+    // Final check to see if all tokens were consumed
     if (result && (parser->pos == parser->count || (parser->pos == parser->count - 1 && strcmp(parser->tokens[parser->pos], "&") == 0)))
     {
         return 1;
@@ -326,6 +302,7 @@ int parse_command(char *input, Parser *parser)
 }
 void free_tokens(Parser *parser)
 {
+    printf("Freeing the tokens\n");
     if (parser && parser->tokens)
     {
         for (int i = 0; i < parser->count; i++)
@@ -338,4 +315,5 @@ void free_tokens(Parser *parser)
         free(parser->tokens);
         parser->tokens = NULL;
     }
+    printf("DOne with freeing the tokens array\n");
 }

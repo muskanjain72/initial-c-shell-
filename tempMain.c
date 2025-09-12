@@ -3,6 +3,11 @@ extern char home_dir[MAX_PATH];
 extern char current_dir[MAX_PATH];
 extern char previous_dir[MAX_PATH];
 extern int has_previous;
+extern LogEntry command_log[MAX_LOG_ENTRIES];
+extern int log_count;
+extern int log_start;
+extern char log_file_path[MAX_PATH];
+
 void initialize_all_state()
 {
     // this is initializing the hop part
@@ -11,9 +16,9 @@ void initialize_all_state()
         perror("getcwd");
         exit(1);
     }
-    printf("Home directory is %s\n",home_dir);
+    printf("Home directory is %s\n", home_dir);
     has_previous = 0;
-    // initialize_log();
+    initialize_log();
     // No need to call initialize_hop here, as hop.c sets initial state
 }
 int route_command(char **tokens)
@@ -25,7 +30,13 @@ int route_command(char **tokens)
     }
     else if (strcmp(tokens[0], "reveal") == 0)
     {
+        printf("Its a reveal command\n");
         return execute_reveal(tokens);
+    }
+    else if (strcmp(tokens[0], "log") == 0)
+    {
+        printf("Its a log command\n");
+        return execute_log(tokens);
     }
     return 0;
 }
@@ -36,7 +47,7 @@ int main()
     while (1)
     {
         char curr_dir_path[MAX_PATH];
-        getcwd(curr_dir_path,sizeof(curr_dir_path));
+        getcwd(curr_dir_path, sizeof(curr_dir_path));
         prompt(curr_dir_path, home_dir);
 
         char *input = takeInputFromUser();

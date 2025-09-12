@@ -20,7 +20,7 @@
 #include <inttypes.h>
 // #include <grp.h>
 #include "prompt.h"
-// #include "log.h"
+#include "log.h"
 #include "hop.h"
 #include "input.h"
 #include "parser.h"

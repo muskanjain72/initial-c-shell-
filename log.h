@@ -20,6 +20,7 @@ void add_to_log(char *command);
 int execute_log(char **tokens);
 void print_log();
 void purge_log();
+bool shouldLogCommand(char *input);
 // int should_log_command(char *command);
 // int execute_from_log(int index);
 // char *get_log_file_path();int initialize_log();

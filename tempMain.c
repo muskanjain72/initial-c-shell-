@@ -67,7 +67,9 @@ int main()
         if (token_count > 0 && parse_shell_cmd(&parser))
         {
             // printf("Your syntax is valid ..yaaayy\n");
-            add_to_log(input);
+            bool m = shouldLogCommand(input);
+            if (m && !(strcmp(parser.tokens[0], "log") == 0))
+                add_to_log(input);
             printf("Printed syntax is %s\n", input);
             route_command(parser.tokens);
             printf("Command executed successfully\n");

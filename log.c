@@ -91,7 +91,7 @@ int execute_log(char **tokens)
             {
                 printf("Executing: %s\n", command_to_execute);
                 // printf("Parser tokens:%s\n", parser.tokens);
-                printf("Command to execute:%s\n",command_to_execute);
+                printf("Command to execute:%s\n", command_to_execute);
                 route_command(parser.tokens);
                 free_tokens(&parser);
                 return 2;
@@ -179,4 +179,19 @@ void load_log_from_file()
         }
     }
     fclose(file);
+}
+bool shouldLogCommand(char *input)
+{
+    FILE *file = fopen(log_file_path, "r");
+    if (!file)
+        return true;
+    char line[MAX_CMD_LENGTH];
+    while (fgets(line, sizeof(line), file) && log_count < MAX_LOG_ENTRIES)
+    {
+        line[strcspn(line, "\n")] = 0;
+        if (strcmp(input, line) == 0)
+            return false;
+    }
+    fclose(file);
+    return true;
 }

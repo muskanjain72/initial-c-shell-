@@ -8,6 +8,7 @@ void prompt(char *curr_path, const char *home_path)
     struct passwd *pwd = getpwuid(getuid());
     char *userName = pwd->pw_name;
     
+    // char *userName = getlogin();    this can fail sometimes
     gethostname(sysName, sizeof(sysName));
 
     char finalPath[4096];

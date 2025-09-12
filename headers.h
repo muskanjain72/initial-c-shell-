@@ -23,7 +23,7 @@
 // #include "log.h"
 // #include "hop.h"
 #include "input.h"
-// #include "parser.h"
+#include "parser.h"
 // #include "reveal.h"
 // #include "io.h"
 // #include "pipes.h"

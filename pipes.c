@@ -3,6 +3,11 @@
 void execute_pipeline(char **tokens)
 {
     int pipe_fds[2];
+    /*
+    pipe_fds[0]: The read end of the pipe.
+    pipe_fds[1]: The write end of the pipe.
+    Any data written to pipe_fds[1] can be read from pipe_fds[0]
+    */
     int prev_fd = STDIN_FILENO;
     int cmd_start_index = 0;
     pid_t pids[100];
@@ -33,16 +38,17 @@ void execute_pipeline(char **tokens)
                     break;
                 }
             }
-           
+
             for (int j = i - 1; j >= cmd_start_index; j--)
             {
                 if (strcmp(tokens[j], "<") == 0)
                 {
-                    if (tokens[j+1] == NULL) {
+                    if (tokens[j + 1] == NULL)
+                    {
                         fprintf(stderr, "Syntax error: no input file specified after '<'\n");
                         return;
                     }
-                    input_file = tokens[j+1];
+                    input_file = tokens[j + 1];
                     tokens[j] = NULL; // Null-terminate the command for execvp
                     break;
                 }
@@ -65,9 +71,11 @@ void execute_pipeline(char **tokens)
 
             if (pid == 0)
             {
-                if (input_file != NULL) {
+                if (input_file != NULL)
+                {
                     int fd = open(input_file, O_RDONLY);
-                    if (fd < 0) {
+                    if (fd < 0)
+                    {
                         fprintf(stderr, "No such file or directory: %s\n", strerror(errno));
                         exit(1);
                     }
@@ -77,6 +85,7 @@ void execute_pipeline(char **tokens)
                 else if (prev_fd != STDIN_FILENO)
                 {
                     dup2(prev_fd, STDIN_FILENO);
+                    //"Take the data from the read end of the previous pipe and make it this command's standard input.
                     close(prev_fd);
                 }
                 if (tokens[i] != NULL)

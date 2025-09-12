@@ -33,7 +33,7 @@
 #include "background.h"
 #include "sequential.h"
 // #include "ping.h"
-// #include "activities.h"
+#include "activities.h"
 #define MAX_LOG_ENTRIES 15
 #define MAX_TOKEN_LEN 256
 #define MAX_TOKENS 128

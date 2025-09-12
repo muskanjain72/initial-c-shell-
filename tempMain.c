@@ -21,6 +21,33 @@ void initialize_all_state()
     initialize_log();
     // No need to call initialize_hop here, as hop.c sets initial state
 }
+void execute_external_command(char **tokens)
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        // Forking failed
+        perror("fork failed");
+        return;
+    }
+    else if (pid == 0)
+    {
+        execvp(tokens[0], tokens);
+
+        // execvp only returns if an error occurred.
+        // If it reaches here, the command was not found.
+        printf("Command not found!\n");
+        exit(1);
+    }
+    else
+    {
+        // Parent process
+        // Wait for the child process to finish
+        int status;
+        waitpid(pid, &status, 0);
+    }
+}
 int route_command(char **tokens)
 {
     if (strcmp(tokens[0], "hop") == 0)
@@ -37,6 +64,10 @@ int route_command(char **tokens)
     {
         printf("Its a log command\n");
         return execute_log(tokens);
+    }
+    else
+    {
+        execute_external_command(tokens);
     }
     return 0;
 }

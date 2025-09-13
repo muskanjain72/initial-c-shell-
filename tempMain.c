@@ -194,9 +194,15 @@ int route_command(char **tokens,int is_background)
         list_activities();
         return 0;
     }
+    else if (strcmp(tokens[0], "fg") == 0 || strcmp(tokens[0], "bg") == 0)
+    {
+        printf("Its a fg_bg process\n");
+        return route_jobs_command(tokens);
+    }
     else
     {
         // execute_external_command(tokens);
+        printf("Pipeline will be executed\n");
         execute_pipeline(tokens,is_background);
     }
     return 0;

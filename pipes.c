@@ -202,7 +202,8 @@ void execute_pipeline(char **tokens, int is_background)
     {
         for (int i = 0; i < pid_count; i++)
         {
-            waitpid(pids[i], NULL, 0);
+            // waitpid(pids[i], NULL, 0);
+            fg_wait(pids[i], tokens[cmd_start - 1]);
         }
     }
     return;

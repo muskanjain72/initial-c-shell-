@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -Wall -Wextra -Werror -Wno-unused-parameter -fno-asm
 
-SRCS = tempMain.c prompt.c input.c parser.c hop.c reveal.c log.c pipes.c activities.c sequential.c background.c
+SRCS = tempMain.c prompt.c input.c parser.c hop.c reveal.c log.c pipes.c activities.c sequential.c background.c ping.c signals.c jobs.c
 OBJS = $(patsubst %.c, %.o, $(SRCS))
 
 EXECUTABLE = shell.out

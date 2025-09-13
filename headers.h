@@ -28,15 +28,17 @@
 // #include "io.h"
 #include "pipes.h"
 // #include "execution.h"
-// #include "signals.h"
-// #include "jobs.h"
+#include "signals.h"
+#include "jobs.h"
 #include "background.h"
 #include "sequential.h"
-// #include "ping.h"
+#include "ping.h"
 #include "activities.h"
 #define MAX_LOG_ENTRIES 15
 #define MAX_TOKEN_LEN 256
 #define MAX_TOKENS 128
 #define MAX_PATH 1024
-
+extern pid_t shell_pgid;
+extern pid_t fg_pgid;
+extern char fg_command[256];
 #endif

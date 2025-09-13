@@ -23,7 +23,7 @@ void initialize_all_state()
 }
 void execute_external_command(char **tokens)
 {
-    char *redirect_file = NULL;
+    /*char *redirect_file = NULL;
     char *command_args[100];
     int arg_count = 0;
 
@@ -93,6 +93,79 @@ void execute_external_command(char **tokens)
     else
     {
         // Parent process
+        int status;
+        waitpid(pid, &status, 0);
+    }*/
+    char *redirect_in  = NULL;  // last input file
+    char *redirect_out = NULL;  // last output file
+    int   append_out   = 0;     // 0 = truncate (>), 1 = append (>>)
+    char *command_args[100];
+    int   arg_count = 0;
+
+    // Parse tokens, remembering only the *last* redirection of each kind
+    for (int i = 0; tokens[i] != NULL; i++)
+    {
+        if (strcmp(tokens[i], "<") == 0) {
+            if (tokens[i+1]) {
+                redirect_in = tokens[i+1];
+                i++; // skip filename
+            } else {
+                fprintf(stderr, "Syntax error: no input file specified after '<'.\n");
+                return;
+            }
+        }
+        else if (strcmp(tokens[i], ">") == 0 || strcmp(tokens[i], ">>") == 0) {
+            if (tokens[i+1]) {
+                redirect_out = tokens[i+1];
+                append_out   = (tokens[i][1] == '>'); // 1 if >>
+                i++; // skip filename
+            } else {
+                fprintf(stderr, "Syntax error: no output file specified after '>' or '>>'.\n");
+                return;
+            }
+        }
+        else {
+            command_args[arg_count++] = tokens[i];
+        }
+    }
+    command_args[arg_count] = NULL;
+    if (command_args[0] == NULL) return;   // nothing to run
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("fork failed");
+        return;
+    } else if (pid == 0) {
+        // ----- Child -----
+        // Input redirection
+        if (redirect_in) {
+            int fd = open(redirect_in, O_RDONLY);
+            if (fd < 0) {
+                fprintf(stderr, "No such file or directory\n");
+                exit(1);
+            }
+            dup2(fd, STDIN_FILENO);
+            close(fd);
+        }
+
+        // Output redirection
+        if (redirect_out) {
+            int flags = O_WRONLY | O_CREAT;
+            flags |= append_out ? O_APPEND : O_TRUNC;
+            int fd = open(redirect_out, flags, 0644);
+            if (fd < 0) {
+                fprintf(stderr, "Unable to create file for writing\n");
+                exit(1);
+            }
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+
+        execvp(command_args[0], command_args);
+        fprintf(stderr, "Command not found!\n");
+        exit(1);
+    } else {
+        // ----- Parent -----
         int status;
         waitpid(pid, &status, 0);
     }

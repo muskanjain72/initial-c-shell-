@@ -1,15 +1,15 @@
-cat < file1.txt
-cat < nofile.txt
-wc -l < file2.txt
-sort < file2.txt
-echo "AAA" > a.txt
-cat < file1.txt < file2.txt
-git add .
-ls -l
-ls -a
-ls -la
-cat < file1.txt < file2.txt
-cat < file1.txt
-cat < file2.txt
-cat < file1.txt < file2.txt
-cat < a.txt < b.txt < file1.txt
+echo "First line" > out1.txt
+cat < out1.txt
+cat out1.txt
+echo "Overwrite" > out1.txt
+cat out1.txt
+echo "Line A" > out2.txt
+echo "Line B" >> out2.txt
+cat out2.txt
+echo "Copy me" > source.txt
+cat < source.txt > dest.txt
+cat dest.txt
+echo "Check last" > a.txt > b.txt > c.txt
+cat a.txt
+cat b.txt
+cat c.txt

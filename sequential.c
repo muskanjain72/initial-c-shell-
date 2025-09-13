@@ -16,9 +16,12 @@ void execute_sequential_commands(char *input)
         // Check for a background ampersand
         // execute_background_or_foreground(cmd_group);
         execute_command_group(cmd_group);
+        while(*cmd_start == ' ' || *cmd_start == '\t') {
+            cmd_start++;
+        }
 
         // Move to the next command group
-        cmd_start = cmd_end + 1;
+        // cmd_start = cmd_end + 1;
     }
 
     // Handle the last command group (or the only command group)

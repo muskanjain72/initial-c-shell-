@@ -20,5 +20,6 @@ void update_processes();
 void list_activities();
 void kill_all_processes();
 Process* get_job_by_number(int job_number);
+int execute_activities(char **tokens);
 
 #endif

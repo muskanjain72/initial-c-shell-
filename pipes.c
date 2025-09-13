@@ -2,65 +2,100 @@
 
 void execute_pipeline(char **tokens)
 {
-    int pipe_fds[2];
+    // int pipe_fds[2];
     /*
     pipe_fds[0]: The read end of the pipe.
     pipe_fds[1]: The write end of the pipe.
     Any data written to pipe_fds[1] can be read from pipe_fds[0]
     */
     int prev_fd = STDIN_FILENO;
-    int cmd_start_index = 0;
+    int cmd_start = 0;
     pid_t pids[100];
     int pid_count = 0;
-    for (int i = 0; tokens[i] != NULL || (i > 0 && strcmp(tokens[i - 1], "|") == 0) || cmd_start_index < i; i++)
+
+    for (int i = 0;; i++)
     {
         if (tokens[i] == NULL || strcmp(tokens[i], "|") == 0)
         {
-            char **cmd_tokens = &tokens[cmd_start_index];
+            // char **cmd_tokens = &tokens[cmd_start_index];
             char *output_file = NULL;
             int append_mode = 0;
             char *input_file = NULL;
-            for (int j = i - 1; j >= cmd_start_index; j--)
-            {
-                if (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0)
-                {
-                    if (tokens[j + 1] != NULL)
-                    {
-                        output_file = tokens[j + 1];
-                        append_mode = (strcmp(tokens[j], ">>") == 0);
-                        tokens[j] = NULL;
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
-                        return;
-                    }
-                    break;
-                }
-            }
+            // for (int j = i - 1; j >= cmd_start_index; j--)
+            // {
+            //     if (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0)
+            //     {
+            //         if (tokens[j + 1] != NULL)
+            //         {
+            //             output_file = tokens[j + 1];
+            //             append_mode = (strcmp(tokens[j], ">>") == 0);
+            //             tokens[j] = NULL;
+            //         }
+            //         else
+            //         {
+            //             fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
+            //             return;
+            //         }
+            //         break;
+            //     }
+            // }
 
-            for (int j = i - 1; j >= cmd_start_index; j--)
+            // for (int j = i - 1; j >= cmd_start_index; j--)
+            // {
+            //     if (strcmp(tokens[j], "<") == 0)
+            //     {
+            //         if (tokens[j + 1] == NULL)
+            //         {
+            //             fprintf(stderr, "Syntax error: no input file specified after '<'\n");
+            //             return;
+            //         }
+            //         input_file = tokens[j + 1];
+            //         tokens[j] = NULL; // Null-terminate the command for execvp
+            //         break;
+            //     }
+            // }
+            for (int j = cmd_start; j < i; j++)
             {
-                if (strcmp(tokens[j], "<") == 0)
+                if (tokens[j] && strcmp(tokens[j], "<") == 0)
                 {
-                    if (tokens[j + 1] == NULL)
+                    if (!tokens[j + 1])
                     {
-                        fprintf(stderr, "Syntax error: no input file specified after '<'\n");
+                        fprintf(stderr, "Syntax error: no input file after '<'\n");
                         return;
                     }
                     input_file = tokens[j + 1];
-                    tokens[j] = NULL; // Null-terminate the command for execvp
-                    break;
+                    tokens[j] = NULL;
                 }
-            }
-            if (tokens[i] != NULL)
-            {
-                if (pipe(pipe_fds) < 0)
+                else if (tokens[j] &&
+                         (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0))
                 {
-                    perror("pipe failed");
-                    return;
+                    if (!tokens[j + 1])
+                    {
+                        fprintf(stderr, "Syntax error: no output file after '%s'\n", tokens[j]);
+                        return;
+                    }
+                    output_file = tokens[j + 1];
+                    append_mode = (strcmp(tokens[j], ">>") == 0);
+                    tokens[j] = NULL;
                 }
             }
+            tokens[i] = NULL;
+            char **cmd_tokens = &tokens[cmd_start];
+            int pipe_fds[2];
+            int need_pipe = (tokens[i] != NULL); // true if not last command
+            if (need_pipe && pipe(pipe_fds) < 0)
+            {
+                perror("pipe");
+                return;
+            }
+            // if (tokens[i] != NULL)
+            // {
+            //     if (pipe(pipe_fds) < 0)
+            //     {
+            //         perror("pipe failed");
+            //         return;
+            //     }
+            // }
 
             pid_t pid = fork();
             if (pid < 0)
@@ -88,9 +123,15 @@ void execute_pipeline(char **tokens)
                     //"Take the data from the read end of the previous pipe and make it this command's standard input.
                     close(prev_fd);
                 }
-                if (tokens[i] != NULL)
+                // if (tokens[i] != NULL)
+                // {
+                //     close(pipe_fds[0]); // Close read end in child
+                //     dup2(pipe_fds[1], STDOUT_FILENO);
+                //     close(pipe_fds[1]);
+                // }
+                if (need_pipe)
                 {
-                    close(pipe_fds[0]); // Close read end in child
+                    close(pipe_fds[0]); // close read end
                     dup2(pipe_fds[1], STDOUT_FILENO);
                     close(pipe_fds[1]);
                 }
@@ -121,13 +162,20 @@ void execute_pipeline(char **tokens)
                 if (prev_fd != STDIN_FILENO)
                     close(prev_fd);
 
-                if (tokens[i] != NULL)
+                // if (tokens[i] != NULL)
+                // {
+                //     close(pipe_fds[1]); // Close write end in parent
+                //     prev_fd = pipe_fds[0];
+                // }
+                if (need_pipe)
                 {
-                    close(pipe_fds[1]); // Close write end in parent
+                    close(pipe_fds[1]); // parent keeps read end for next cmd
                     prev_fd = pipe_fds[0];
                 }
-                cmd_start_index = i + 1;
-                if (tokens[i] == NULL)
+                cmd_start = i + 1;
+                // if (tokens[i] == NULL)
+                //     break;
+                if (!need_pipe)
                     break;
             }
         }

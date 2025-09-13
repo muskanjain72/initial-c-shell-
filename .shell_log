@@ -1,15 +1,7 @@
-echo "First line" > out1.txt
-cat < out1.txt
-cat out1.txt
-echo "Overwrite" > out1.txt
-cat out1.txt
-echo "Line A" > out2.txt
-echo "Line B" >> out2.txt
-cat out2.txt
-echo "Copy me" > source.txt
-cat < source.txt > dest.txt
-cat dest.txt
-echo "Check last" > a.txt > b.txt > c.txt
-cat a.txt
-cat b.txt
-cat c.txt
+echo "hello" | tr a-z A-Z
+echo "one two three" | tr a-z A-Z | tr ' ' '\n' | sort
+echo -e "apple\nbanana\ncarrot" > fruits.txt
+cat < fruits.txt | grep an
+echo -e apple > fruits.txt
+cat < fruits.txt
+echo "Hello World"

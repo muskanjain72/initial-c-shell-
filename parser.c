@@ -19,7 +19,7 @@ int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an
         return 0;
     }
     char *current = input;
-    printf("Initial Input is %s\n", current);
+    // printf("Initial Input is %s\n", current);
     while (*current != '\0' && parser->count < MAX_TOKENS)
     {
         // Skip leading whitespace
@@ -99,13 +99,13 @@ int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an
     {
         parser->tokens[parser->count] = NULL;
     }
-    printf("Total numeber of tokens are %d\n",parser->count);
-    printf("Following r the tokens:\n");
-    for (int i = 0; i < parser->count; i++)
-    {
-        printf("%s\n",parser->tokens[i]);
-    }
-    printf("Done with tokenizing and exiting from function\n");
+    // printf("Total numeber of tokens are %d\n",parser->count);
+    // printf("Following r the tokens:\n");
+    // for (int i = 0; i < parser->count; i++)
+    // {
+        // printf("%s\n",parser->tokens[i]);
+    // }
+    // printf("Done with tokenizing and exiting from function\n");
     return parser->count;
 }
 
@@ -285,12 +285,12 @@ int parse_command(char *input, Parser *parser)
         return 1; // Empty input is valid
         
     }
-    printf("Tokens are as follows: \n");
-    for (int i = 0; i < parser->count; i++)
-    {
-        printf("%s ", parser->tokens[i]);
-    }
-    printf("\n");
+    // printf("Tokens are as follows: \n");
+    // for (int i = 0; i < parser->count; i++)
+    // {
+    //     printf("%s ", parser->tokens[i]);
+    // }
+    // printf("\n");
     parser->pos = 0;
     int result = parse_shell_cmd(parser);
     // Final check to see if all tokens were consumed
@@ -302,7 +302,7 @@ int parse_command(char *input, Parser *parser)
 }
 void free_tokens(Parser *parser)
 {
-    printf("Freeing the tokens\n");
+    // printf("Freeing the tokens\n");
     if (parser && parser->tokens)
     {
         for (int i = 0; i < parser->count; i++)
@@ -315,5 +315,5 @@ void free_tokens(Parser *parser)
         free(parser->tokens);
         parser->tokens = NULL;
     }
-    printf("DOne with freeing the tokens array\n");
+    // printf("DOne with freeing the tokens array\n");
 }

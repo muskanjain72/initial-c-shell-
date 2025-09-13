@@ -189,8 +189,8 @@ int route_command(char **tokens)
     }
     else
     {
-        execute_external_command(tokens);
-        // execute_pipeline(tokens);
+        // execute_external_command(tokens);
+        execute_pipeline(tokens);
     }
     return 0;
 }
@@ -224,9 +224,9 @@ int main()
             bool m = shouldLogCommand(input);
             if (m && !(strcmp(parser.tokens[0], "log") == 0))
                 add_to_log(input);
-            printf("Printed syntax is %s\n", input);
+            // printf("Printed syntax is %s\n", input);
             route_command(parser.tokens);
-            printf("Command executed successfully\n");
+            // printf("Command executed successfully\n");
         }
         else if (token_count > 0)
         {

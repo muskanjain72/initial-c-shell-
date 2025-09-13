@@ -4,8 +4,8 @@
 #define WCONTINUED 0
 #endif
 static int job_counter = 1;
-static Process *head = NULL; // linked list head
-void add_process(pid_t pid, const char *cmd)
+Process *head = NULL; // linked list head
+void add_process(pid_t pid, const char *cmd,ProcessState state)
 {
     Process *new_proc = malloc(sizeof(Process));
     if (!new_proc)
@@ -17,7 +17,7 @@ void add_process(pid_t pid, const char *cmd)
     new_proc->job_number = job_counter++;
     strncpy(new_proc->command, cmd, 255);
     new_proc->command[255] = '\0';
-    new_proc->state = RUNNING;
+    new_proc->state = state;
     new_proc->next = head;
     head = new_proc;
 }
@@ -61,6 +61,9 @@ void update_processes()
             if (WIFEXITED(status) || WIFSIGNALED(status))
             {
                 // Process ended → remove from list
+                printf("background process with pid %d (%s) exited %s\n", curr->pid,
+                    curr->command,
+                    WIFEXITED(status) ? "normally" : "abnormally");
                 pid_t to_remove = curr->pid;
                 curr = curr->next;
                 remove_process(to_remove);
@@ -87,6 +90,7 @@ void update_processes()
             else
             {
                 // Process vanished somehow
+                printf("background process with pid %d (%s) exited\n", curr->pid, curr->command);
                 pid_t to_remove = curr->pid;
                 curr = curr->next;
                 remove_process(to_remove);
@@ -129,7 +133,6 @@ void list_activities()
         arr[i] = curr;
         curr = curr->next;
     }
-
     qsort(arr, count, sizeof(Process *), cmp_process);
     for (int i = 0; i < count; i++)
     {

@@ -5,3 +5,7 @@ cat < fruits.txt | grep an
 echo -e apple > fruits.txt
 cat < fruits.txt
 echo "Hello World"
+echo "First Command" ; sleep 5 ; echo "Second command"
+sleep 2
+sleep 10
+sleep 5 &

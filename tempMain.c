@@ -3,6 +3,7 @@ extern char home_dir[MAX_PATH];
 extern char current_dir[MAX_PATH];
 extern char previous_dir[MAX_PATH];
 extern int has_previous;
+
 extern LogEntry command_log[MAX_LOG_ENTRIES];
 extern int log_count;
 extern int log_start;
@@ -170,7 +171,7 @@ void execute_external_command(char **tokens)
         waitpid(pid, &status, 0);
     }
 }
-int route_command(char **tokens)
+int route_command(char **tokens,int is_background)
 {
     if (strcmp(tokens[0], "hop") == 0)
     {
@@ -186,6 +187,12 @@ int route_command(char **tokens)
     {
         printf("Its a log command\n");
         return execute_log(tokens);
+    }
+    else if (strcmp(tokens[0], "activities") == 0)
+    {
+        printf("Its an activities command\n");
+        list_activities();
+        return 0;
     }
     else
     {
@@ -225,7 +232,7 @@ int main()
             if (m && !(strcmp(parser.tokens[0], "log") == 0))
                 add_to_log(input);
             // printf("Printed syntax is %s\n", input);
-            route_command(parser.tokens);
+            route_command(parser.tokens,0);
             // printf("Command executed successfully\n");
         }
         else if (token_count > 0)

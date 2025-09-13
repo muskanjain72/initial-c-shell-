@@ -1,8 +1,8 @@
 #include "headers.h"
-
-void execute_pipeline(char **tokens)
+extern void add_process(pid_t pid, const char *cmd,ProcessState state);
+void execute_pipeline(char **tokens, int is_background)
 {
-    // int pipe_fds[2];
+    int pipe_fds[2];
     /*
     pipe_fds[0]: The read end of the pipe.
     pipe_fds[1]: The write end of the pipe.
@@ -13,48 +13,49 @@ void execute_pipeline(char **tokens)
     pid_t pids[100];
     int pid_count = 0;
 
-    for (int i = 0;; i++)
+    // for (int i = 0;; i++)
+    for (int i = 0; tokens[i] != NULL || (i > 0 && strcmp(tokens[i - 1], "|") == 0) || cmd_start < i; i++)
     {
         if (tokens[i] == NULL || strcmp(tokens[i], "|") == 0)
         {
-            // char **cmd_tokens = &tokens[cmd_start_index];
+            char **cmd_tokens = &tokens[cmd_start];
             char *output_file = NULL;
             int append_mode = 0;
             char *input_file = NULL;
-            // for (int j = i - 1; j >= cmd_start_index; j--)
-            // {
-            //     if (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0)
-            //     {
-            //         if (tokens[j + 1] != NULL)
-            //         {
-            //             output_file = tokens[j + 1];
-            //             append_mode = (strcmp(tokens[j], ">>") == 0);
-            //             tokens[j] = NULL;
-            //         }
-            //         else
-            //         {
-            //             fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
-            //             return;
-            //         }
-            //         break;
-            //     }
-            // }
+            for (int j = i - 1; j >= cmd_start; j--)
+            {
+                if (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0)
+                {
+                    if (tokens[j + 1] != NULL)
+                    {
+                        output_file = tokens[j + 1];
+                        append_mode = (strcmp(tokens[j], ">>") == 0);
+                        tokens[j] = NULL;
+                        break;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
+                        return;
+                    }
+                }
+            }
 
-            // for (int j = i - 1; j >= cmd_start_index; j--)
-            // {
-            //     if (strcmp(tokens[j], "<") == 0)
-            //     {
-            //         if (tokens[j + 1] == NULL)
-            //         {
-            //             fprintf(stderr, "Syntax error: no input file specified after '<'\n");
-            //             return;
-            //         }
-            //         input_file = tokens[j + 1];
-            //         tokens[j] = NULL; // Null-terminate the command for execvp
-            //         break;
-            //     }
-            // }
-            for (int j = cmd_start; j < i; j++)
+            for (int j = i - 1; j >= cmd_start; j--)
+            {
+                if (strcmp(tokens[j], "<") == 0)
+                {
+                    if (tokens[j + 1] == NULL)
+                    {
+                        fprintf(stderr, "Syntax error: no input file specified after '<'\n");
+                        return;
+                    }
+                    input_file = tokens[j + 1];
+                    tokens[j] = NULL; // Null-terminate the command for execvp
+                    break;
+                }
+            }
+            /*for (int j = cmd_start; j < i; j++)
             {
                 if (tokens[j] && strcmp(tokens[j], "<") == 0)
                 {
@@ -87,15 +88,15 @@ void execute_pipeline(char **tokens)
             {
                 perror("pipe");
                 return;
+            }*/
+            if (tokens[i] != NULL)
+            {
+                if (pipe(pipe_fds) < 0)
+                {
+                    perror("pipe failed");
+                    return;
+                }
             }
-            // if (tokens[i] != NULL)
-            // {
-            //     if (pipe(pipe_fds) < 0)
-            //     {
-            //         perror("pipe failed");
-            //         return;
-            //     }
-            // }
 
             pid_t pid = fork();
             if (pid < 0)
@@ -106,6 +107,11 @@ void execute_pipeline(char **tokens)
 
             if (pid == 0)
             {
+                if (is_background)
+                {
+                    redirect_stdin_to_null();
+                }
+
                 if (input_file != NULL)
                 {
                     int fd = open(input_file, O_RDONLY);
@@ -123,18 +129,18 @@ void execute_pipeline(char **tokens)
                     //"Take the data from the read end of the previous pipe and make it this command's standard input.
                     close(prev_fd);
                 }
-                // if (tokens[i] != NULL)
-                // {
-                //     close(pipe_fds[0]); // Close read end in child
-                //     dup2(pipe_fds[1], STDOUT_FILENO);
-                //     close(pipe_fds[1]);
-                // }
-                if (need_pipe)
+                if (tokens[i] != NULL)
                 {
-                    close(pipe_fds[0]); // close read end
+                    close(pipe_fds[0]); // Close read end in child
                     dup2(pipe_fds[1], STDOUT_FILENO);
                     close(pipe_fds[1]);
                 }
+                // if (need_pipe)
+                // {
+                //     close(pipe_fds[0]); // close read end
+                //     dup2(pipe_fds[1], STDOUT_FILENO);
+                //     close(pipe_fds[1]);
+                // }
                 else if (output_file != NULL)
                 {
                     int flags = O_WRONLY | O_CREAT;
@@ -159,30 +165,37 @@ void execute_pipeline(char **tokens)
             else
             {
                 pids[pid_count++] = pid;
+                if (is_background)
+                {
+                    add_process(pid, cmd_tokens[0], RUNNING);
+                }
                 if (prev_fd != STDIN_FILENO)
                     close(prev_fd);
 
-                // if (tokens[i] != NULL)
-                // {
-                //     close(pipe_fds[1]); // Close write end in parent
-                //     prev_fd = pipe_fds[0];
-                // }
-                if (need_pipe)
+                if (tokens[i] != NULL)
                 {
-                    close(pipe_fds[1]); // parent keeps read end for next cmd
+                    close(pipe_fds[1]); // Close write end in parent
                     prev_fd = pipe_fds[0];
                 }
+                // if (need_pipe)
+                // {
+                //     close(pipe_fds[1]); // parent keeps read end for next cmd
+                //     prev_fd = pipe_fds[0];
+                // }
                 cmd_start = i + 1;
-                // if (tokens[i] == NULL)
-                //     break;
-                if (!need_pipe)
+                if (tokens[i] == NULL)
                     break;
+                // if (!need_pipe)
+                //     break;
             }
         }
     }
-    for (int i = 0; i < pid_count; i++)
+    if (!is_background)
     {
-        waitpid(pids[i], NULL, 0);
+        for (int i = 0; i < pid_count; i++)
+        {
+            waitpid(pids[i], NULL, 0);
+        }
     }
     return;
 }

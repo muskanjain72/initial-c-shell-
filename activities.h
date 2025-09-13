@@ -14,12 +14,13 @@ typedef struct Process
     struct Process *next;
 } Process;
 extern Process *head;
-void add_process(pid_t pid, const char *cmd);
+void add_process(pid_t pid, const char *cmd,ProcessState state);
 void remove_process(pid_t pid);
 void update_processes();
 void list_activities();
 void kill_all_processes();
 Process* get_job_by_number(int job_number);
-int execute_activities(char **tokens);
+// int execute_activities(char **tokens);
+void redirect_stdin_to_null();
 
 #endif

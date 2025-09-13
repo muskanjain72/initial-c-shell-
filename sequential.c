@@ -4,18 +4,19 @@ void execute_sequential_commands(char *input)
 {
     char *cmd_start = input;
     char *cmd_end;
-    char *cmd_group;
+    // char *cmd_group;
 
     // Split input by ';'
     while ((cmd_end = strchr(cmd_start, ';')) != NULL)
     {
         // Null-terminate the current command group
         *cmd_end = '\0';
-        cmd_group = cmd_start;
+        // cmd_group = cmd_start;
+        execute_command_group(cmd_start);
 
         // Check for a background ampersand
         // execute_background_or_foreground(cmd_group);
-        execute_command_group(cmd_group);
+        // execute_command_group(cmd_group);
         while(*cmd_start == ' ' || *cmd_start == '\t') {
             cmd_start++;
         }

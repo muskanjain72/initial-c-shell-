@@ -189,7 +189,7 @@ int tokenize(char *input, Parser *parser)
     }
 
     char *current = input;
-    char *token_start;
+    // char *token_start;
     
     while (*current != '\0' && parser->count < MAX_TOKENS) {
         // Skip leading whitespace
@@ -200,7 +200,7 @@ int tokenize(char *input, Parser *parser)
         if (*current == '\0') {
             break;
         }
-
+        char *token_start = current;
         // Handle quoted strings
         if (*current == '"') {
             current++; // Move past the opening quote
@@ -215,17 +215,17 @@ int tokenize(char *input, Parser *parser)
         }
         // Handle `>>`
         else if (*current == '>' && *(current + 1) == '>') {
-            token_start = current;
+            // token_start = current;
             current += 2;
         }
         // Handle single-character tokens (`|`, `&`, `;`, `<`, `>`)
         else if (strchr("|&;<>", *current) != NULL) {
-            token_start = current;
+            // token_start = current;
             current++;
         }
         // Handle regular tokens
         else {
-            token_start = current;
+            // token_start = current;
             while (*current != '\0' && !isspace(*current) && !strchr("|&;<>", *current)) {
                 current++;
             }

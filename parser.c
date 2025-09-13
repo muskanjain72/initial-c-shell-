@@ -8,7 +8,7 @@ input -> < name | <name
 output -> > name | >name | >> name | >>name
 name -> r"[^|&><;\s]+"
 */
-int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an array of tokens
+/*int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an array of tokens
 {
     parser->pos = 0;
     parser->count = 0;
@@ -106,6 +106,151 @@ int tokenize(char *input, Parser *parser)  // Tokenizes the input string into an
         // printf("%s\n",parser->tokens[i]);
     // }
     // printf("Done with tokenizing and exiting from function\n");
+    return parser->count;
+}
+*/
+/*int tokenize(char *input, Parser *parser) {
+    parser->pos = 0;
+    parser->count = 0;
+    parser->tokens = malloc(MAX_TOKENS * sizeof(char *));
+    if (parser->tokens == NULL) {
+        fprintf(stderr, "Memory allocation failed for tokens array.\n");
+        return 0;
+    }
+
+    char *current = input;
+    char *token_start;
+    bool in_quotes = false;
+    
+    while (*current != '\0' && parser->count < MAX_TOKENS) {
+        // Skip leading whitespace
+        while (isspace(*current)) {
+            current++;
+        }
+
+        if (*current == '\0') {
+            break;
+        }
+
+        // Handle quoted strings
+        if (*current == '"') {
+            in_quotes = true;
+            current++; // Move past the opening quote
+            token_start = current;
+            while (*current != '\0' && (*current != '"' || (current > token_start && *(current - 1) == '\\'))) {
+                current++;
+            }
+            *current = '\0'; // Null-terminate the string
+            current++; // Move past the closing quote
+        }
+        // Handle single-character tokens (`|`, `&`, `;`, `<`, `>`)
+        else if (strchr("|&;<", *current) || (*current == '>' && *(current + 1) != '>')) {
+            token_start = current;
+            current++;
+        }
+        // Handle `>>`
+        else if (*current == '>' && *(current + 1) == '>') {
+            token_start = current;
+            current += 2;
+        }
+        // Handle regular tokens
+        else {
+            token_start = current;
+            while (*current != '\0' && !isspace(*current) && !strchr("|&;><", *current)) {
+                current++;
+            }
+        }
+        
+        char *token = strdup(token_start);
+        if (token == NULL) {
+            fprintf(stderr, "Memory allocation failed for a token.\n");
+            free_tokens(parser);
+            return 0;
+        }
+
+        parser->tokens[parser->count++] = token;
+    }
+
+    if (parser->count < MAX_TOKENS) {
+        parser->tokens[parser->count] = NULL;
+    }
+
+    return parser->count;
+}
+*/
+int tokenize(char *input, Parser *parser)
+{
+    parser->pos = 0;
+    parser->count = 0;
+    parser->tokens = malloc(MAX_TOKENS * sizeof(char *));
+    if (parser->tokens == NULL) {
+        fprintf(stderr, "Memory allocation failed for tokens array.\n");
+        return 0;
+    }
+
+    char *current = input;
+    char *token_start;
+    
+    while (*current != '\0' && parser->count < MAX_TOKENS) {
+        // Skip leading whitespace
+        while (isspace(*current)) {
+            current++;
+        }
+
+        if (*current == '\0') {
+            break;
+        }
+
+        // Handle quoted strings
+        if (*current == '"') {
+            current++; // Move past the opening quote
+            token_start = current;
+            while (*current != '\0' && *current != '"') {
+                current++;
+            }
+            if (*current == '"') {
+                *current = '\0'; // Null-terminate the string
+                current++; // Move past the closing quote
+            }
+        }
+        // Handle `>>`
+        else if (*current == '>' && *(current + 1) == '>') {
+            token_start = current;
+            current += 2;
+        }
+        // Handle single-character tokens (`|`, `&`, `;`, `<`, `>`)
+        else if (strchr("|&;<>", *current) != NULL) {
+            token_start = current;
+            current++;
+        }
+        // Handle regular tokens
+        else {
+            token_start = current;
+            while (*current != '\0' && !isspace(*current) && !strchr("|&;<>", *current)) {
+                current++;
+            }
+        }
+        
+        // Null-terminate the current token
+        char temp_char = *current;
+        *current = '\0';
+        
+        char *token = strdup(token_start);
+        if (token == NULL) {
+            fprintf(stderr, "Memory allocation failed for a token.\n");
+            free_tokens(parser);
+            return 0;
+        }
+        
+        *current = temp_char; // Restore the character
+
+        parser->tokens[parser->count++] = token;
+    }
+
+    if (parser->count < MAX_TOKENS) {
+        parser->tokens[parser->count] = NULL;
+    }
+
     return parser->count;
 }
 

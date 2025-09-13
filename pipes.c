@@ -26,18 +26,26 @@ void execute_pipeline(char **tokens, int is_background)
             {
                 if (strcmp(tokens[j], ">") == 0 || strcmp(tokens[j], ">>") == 0)
                 {
-                    if (tokens[j + 1] != NULL)
-                    {
-                        output_file = tokens[j + 1];
-                        append_mode = (strcmp(tokens[j], ">>") == 0);
-                        tokens[j] = NULL;
-                        break;
-                    }
-                    else
-                    {
+                    // if (tokens[j + 1] != NULL)
+                    // {
+                    //     output_file = tokens[j + 1];
+                    //     append_mode = (strcmp(tokens[j], ">>") == 0);
+                    //     tokens[j] = NULL;
+                    //     break;
+                    // }
+                    // else
+                    // {
+                    //     fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
+                    //     return;
+                    // }
+                    if (tokens[j + 1] == NULL) {
                         fprintf(stderr, "Syntax error: no output file specified after '%s'.\n", tokens[j]);
                         return;
                     }
+                    output_file = tokens[j+1];
+                    append_mode = (strcmp(tokens[j], ">>") == 0);
+                    tokens[j] = NULL;
+                    break;
                 }
             }
 

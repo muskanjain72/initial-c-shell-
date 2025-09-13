@@ -1,11 +1,15 @@
-echo "hello" | tr a-z A-Z
-echo "one two three" | tr a-z A-Z | tr ' ' '\n' | sort
-echo -e "apple\nbanana\ncarrot" > fruits.txt
-cat < fruits.txt | grep an
-echo -e apple > fruits.txt
-cat < fruits.txt
-echo "Hello World"
-echo "First Command" ; sleep 5 ; echo "Second command"
-sleep 2
-sleep 10
-sleep 5 &
+echo "First command"; sleep 10 ; echo "Second Command"
+hello
+echo "Muskan
+reveal ~
+hop ..
+reveal
+hop
+cat < out1.txt
+cat < out1.txt < out2.txt
+echo "First command
+echo "Fist Command
+echo "First command
+sleep 5
+ls -l
+echo "First command

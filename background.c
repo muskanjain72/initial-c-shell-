@@ -28,6 +28,7 @@ void execute_command_group(char *cmd_group)
     {
         len--;
     }
+    cmd_group[len] = '\0';
     if (len > 0 && cmd_group[len - 1] == '&')
     {
         is_background = 1;
@@ -36,19 +37,25 @@ void execute_command_group(char *cmd_group)
     Parser parser;
     char *temp_input = strdup(cmd_group);
     // char **tokens;
-
-    // int token_count = tokenize(temp_input, &parser);
+// 
+    int token_count = tokenize(cmd_group, &parser);
     // if (token_count > 0)
     // {
     //     route_command(parser.tokens, is_background);
     //     free(&parser);
     // }
-    if (tokenize(temp_input, &parser) > 0)
-    {
+    if (token_count > 0) {
         route_command(parser.tokens, is_background);
-        // Correctly free the tokens using the dedicated function
+        // Note: The caller of tokenize is responsible for freeing the memory, as specified in your design.
+        // free(tokens); 
         free_tokens(&parser);
     }
+    // if (tokenize(temp_input, &parser) > 0)
+    // {
+    //     route_command(parser.tokens, is_background);
+    //     // Correctly free the tokens using the dedicated function
+    //     free_tokens(&parser);
+    // }
     free(temp_input);
 }
 

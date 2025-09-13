@@ -197,7 +197,7 @@ int route_command(char **tokens,int is_background)
     else
     {
         // execute_external_command(tokens);
-        execute_pipeline(tokens);
+        execute_pipeline(tokens,is_background);
     }
     return 0;
 }

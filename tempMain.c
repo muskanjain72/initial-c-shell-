@@ -23,30 +23,6 @@ void initialize_all_state()
 }
 void execute_external_command(char **tokens)
 {
-    // pid_t pid = fork();
-
-    // if (pid < 0)
-    // {
-    //     // Forking failed
-    //     perror("fork failed");
-    //     return;
-    // }
-    // else if (pid == 0)
-    // {
-    //     execvp(tokens[0], tokens);
-
-    //     // execvp only returns if an error occurred.
-    //     // If it reaches here, the command was not found.
-    //     printf("Command not found!\n");
-    //     exit(1);
-    // }
-    // else
-    // {
-    //     // Parent process
-    //     // Wait for the child process to finish
-    //     int status;
-    //     waitpid(pid, &status, 0);
-    // }
     char *redirect_file = NULL;
     char *command_args[100];
     int arg_count = 0;
@@ -56,13 +32,12 @@ void execute_external_command(char **tokens)
     {
         if (strcmp(tokens[i], "<") == 0)
         {
-            // Input redirection operator found.
-            // The next token must be the filename.
+
             if (tokens[i + 1] != NULL)
             {
                 redirect_file = tokens[i + 1];
                 // Stop parsing here. The redirection tokens are not passed to execvp.
-                break;
+                i++;
             }
             else
             {
@@ -79,7 +54,6 @@ void execute_external_command(char **tokens)
 
     if (command_args[0] == NULL)
     {
-        // No command to execute.
         return;
     }
 
@@ -142,8 +116,8 @@ int route_command(char **tokens)
     }
     else
     {
-        // execute_external_command(tokens);
-        execute_pipeline(tokens);
+        execute_external_command(tokens);
+        // execute_pipeline(tokens);
     }
     return 0;
 }
